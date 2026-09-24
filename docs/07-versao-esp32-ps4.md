@@ -64,7 +64,6 @@ Se o controle desconectar, o carrinho para sozinho.
 
 | Pasta | Para que serve |
 |---|---|
-| `teste_motores_esp32` | teste isolado da ponte H e dos motores |
 | `carrinho_esp32_ps4` | carrinho controlado pelo PS4 |
 | `carrinho_esp32_ps4_ia` | PS4 + sensor + modelo TinyML (versão final) |
 | `carrinho_esp32_wifi` | alternativa: a ESP32 cria a rede `Carrinho-ESP32` e mostra uma página com botões em `http://192.168.4.1` (funciona no iPhone e no Android) |
@@ -75,7 +74,7 @@ Se o controle desconectar, o carrinho para sozinho.
 
 | Sketches | Placa na Arduino IDE | Pré-requisito |
 |---|---|---|
-| `teste_motores_esp32`, `carrinho_esp32`, `carrinho_esp32_wifi`, `tinyml_a_*`, `tinyml_b_*`, `tinyml_c_*` | **DOIT ESP32 DEVKIT V1** (pacote ESP32, versão 2.0.11) | `tinyml_c_*` precisa da biblioteca do modelo (zip em `dados/tinyml/`) |
+| `carrinho_esp32`, `carrinho_esp32_wifi`, `tinyml_a_*`, `tinyml_b_*`, `tinyml_c_*` | **DOIT ESP32 DEVKIT V1** (pacote ESP32, versão 2.0.11) | `tinyml_c_*` precisa da biblioteca do modelo (zip em `dados/tinyml/`) |
 | `carrinho_esp32_ps4`, `carrinho_esp32_ps4_ia` | **ESP32 + Bluepad32 Arduino > DOIT ESP32 DEVKIT V1** (pacote 4.1.0) | adicionar em *Preferências* a URL abaixo; a versão `_ia` também precisa da biblioteca do modelo |
 
 ```text
@@ -97,7 +96,7 @@ No Windows, a ESP32 com chip CP2102 precisa do driver **CP210x** da Silicon Labs
 | No log do teste, a classe do modelo trocava entre PERTO e MEDIO perto de 22 cm | a fronteira do modelo fica nessa distância e o sensor varia uns 0,4 cm; parado ali, o motor ligaria e desligaria sem parar | histerese (sair de PERTO exige 5 leituras seguidas) |
 | Gravação falhou duas vezes com "porta não existe" | conexão USB oscilou | tentar de novo; se repetir, trocar ou reencaixar o cabo |
 
-Testes que passaram: motores (`teste_motores_esp32`), controle pelo Wi-Fi no iPhone, controle de PS4 (frente, ré, curvas, ✕), luz e vibração no controle, controles de corrida com R2 e L2, e o carrinho com o modelo (bloqueio da frente, ré livre, luzes e vibração).
+Testes que passaram: motores (teste isolado da ponte H), controle pelo Wi-Fi no iPhone, controle de PS4 (frente, ré, curvas, ✕), luz e vibração no controle, controles de corrida com R2 e L2, e o carrinho com o modelo (bloqueio da frente, ré livre, luzes e vibração).
 
 ## 5. Pendências
 

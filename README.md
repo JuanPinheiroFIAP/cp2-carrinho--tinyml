@@ -99,7 +99,7 @@ O planejamento, os requisitos e a evolução dessa versão estão em [docs/01-re
 ## Organização do repositório
 
 ```
-carrinho/
+cp2-carrinho--tinyml/
 ├── README.md                          ← este arquivo
 ├── docs/
 │   ├── 01-requisitos-e-planejamento.md    versão 1: requisitos, MVP, backlog e decisões
@@ -112,17 +112,14 @@ carrinho/
     ├── carrinho_esp32_ps4/            ← versão 2 só com o controle de PS4
     ├── carrinho_esp32_wifi/           ← alternativa: página web pelo Wi-Fi (iPhone e Android)
     ├── carrinho_esp32/                ← alternativa: Bluetooth clássico (só Android)
-    ├── teste_motores_esp32/           ← teste isolado da ponte H na ESP32
     ├── tinyml_a_leitura_bruta/        ← TinyML, parte A: leitura crua do sensor
     ├── tinyml_b_preprocessamento/     ← TinyML, parte B: pré-processamento, classes e CSV
     ├── tinyml_c_modelo/               ← TinyML, parte C: modelo rodando na ESP32
     ├── arduino_carrinho_codigo/       ← versão 1: código principal do Uno (app serial)
-    ├── carrinho_dabble/               ← versão 1: alternativa com o app Dabble
-    ├── teste_motores/                 ← versão 1: teste da ponte H
-    ├── teste_bluetooth/               ← versão 1: teste do HC-05
-    ├── teste_sensor/                  ← versão 1: teste do HC-SR04
-    └── teste_buzzer/                  ← versão 1: teste do buzzer
+    └── carrinho_dabble/               ← versão 1: alternativa com o app Dabble
 ```
+
+Os códigos de teste isolado da versão 1 (motores, Bluetooth, sensor e buzzer) ficam no repositório do grupo: <https://github.com/kaikyalvaro1708/cp-arduino-car> (pasta `code/testes/`).
 
 ## Documentação
 
