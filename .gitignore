@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+dist/
+*.egg-info/
+
+# Arduino / compilação
+build/
+*.elf
+*.bin
+*.map
+
+# Editores e sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
