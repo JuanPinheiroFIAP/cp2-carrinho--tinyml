@@ -1,0 +1,10 @@
+Tarefa 20 - Práticas iniciais TinyML e treinamento do modelo
+Project-based Maker Lab - FIAP
+
+Integrantes do grupo:
+
+Kaiky Alvaro Miranda           RM 98118
+Guilherme Morais Barbosa       RM 551981
+Juan Pinheiro de França        RM 552202
+Matheus Gusmão Aragão          RM 550826
+Júlia Marques Mendes das Neves RM 98680

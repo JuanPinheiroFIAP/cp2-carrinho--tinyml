@@ -97,14 +97,16 @@ Matriz de confusão (linha = classe real, coluna = classe prevista):
 
 O único ponto errado do conjunto de validação fica na fronteira entre perto e médio, perto de 20 cm. A página pública do projeto também informa acurácia de 99,1% no conjunto de teste.
 
+**Print pedido pela professora** (nome do projeto, accuracy, loss, matriz de confusão e Quantized int8, tudo na mesma tela):
+
+![Classifier completo, com nome do projeto](img/edge-impulse-05-classifier-completo.png)
+
 ![Dataset](img/edge-impulse-01-dataset.png)
 ![Feature explorer](img/edge-impulse-02-feature-explorer.png)
 ![Matriz de confusão](img/edge-impulse-03-classifier-matriz-confusao.png)
 ![Métricas](img/edge-impulse-04-metricas.png)
 
 > **Observação:** o Edge Impulse mostra 1.620 amostras (1.296 de treino e 324 de teste), enquanto o CSV enviado tem 1.980 linhas. A causa dessa diferença não foi confirmada.
-
-<!-- PREENCHER: print da tela Classifier com o nome do projeto visível no topo (a professora pede o nome do projeto no print). Salvar em docs/img/. -->
 
 ## 6. Modelo dentro da ESP32 (`tinyml_c_modelo`)
 
