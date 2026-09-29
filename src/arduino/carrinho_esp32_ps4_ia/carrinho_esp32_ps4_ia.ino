@@ -33,6 +33,10 @@
 // Ligação do sensor:
 //   VCC -> 5V (VIN), GND -> GND, TRIG -> GPIO 18,
 //   ECHO -> GPIO 19 por divisor de tensão (1 kΩ + 2 kΩ)
+//
+// Ligação do buzzer (ativo, 2 pernas): (+) -> GPIO 4, (−) -> GND
+// Apita ao bloquear a frente (obstáculo perto) e na emergência (✕)
+// R3 (clique do analógico direito): segurou, buzina; soltou, para
 // =====================================================
 
 #include <Bluepad32.h>
@@ -56,6 +60,20 @@ const int IN3 = 27;
 const int IN4 = 14;
 
 // ENA e ENB ficam com jumper na ponte H (velocidade máxima)
+
+
+// =====================================================
+// BUZZER
+// =====================================================
+
+const int BUZZER = 4;
+
+// millis() em que o buzzer deve desligar sozinho (0 = já desligado).
+// Assim ele apita sem travar o resto do programa com delay().
+unsigned long buzzerDesligaEm = 0;
+
+// R3 (clique do analógico direito) segurado = buzina ligada
+bool buzinaAtiva = false;
 
 
 // =====================================================
@@ -188,6 +206,10 @@ void setup() {
   motorA(0);
   motorB(0);
 
+  pinMode(BUZZER, OUTPUT);
+
+  digitalWrite(BUZZER, LOW);
+
   pinMode(TRIG, OUTPUT);
   pinMode(ECHO, INPUT);
 
@@ -223,6 +245,8 @@ void loop() {
   BP32.update();
 
   atualizarSensor();
+
+  atualizarBuzzer();
 
   if (controle && controle->isConnected() && controle->isGamepad()) {
 
@@ -286,6 +310,8 @@ void aoDesconectarControle(ControllerPtr ctl) {
     emergenciaAtiva = false;
 
     bloqueadoPorObstaculo = false;
+
+    buzinaAtiva = false;
 
     ultimaCor = -1;
 
@@ -462,6 +488,10 @@ void aoMudarClasse() {
 
 void lerControle(ControllerPtr c) {
 
+  // Buzina: segurou R3 (clique do analógico direito), buzina.
+  // Soltou, para na hora.
+  buzinaAtiva = c->thumbR();
+
   // Parada de emergência: botão X (✕)
   if (c->a()) {
 
@@ -475,6 +505,8 @@ void lerControle(ControllerPtr c) {
       atualizarLuz();
 
       vibrar(c, 250);
+
+      apitar(250);
     }
 
     mover('S');
@@ -515,6 +547,8 @@ void lerControle(ControllerPtr c) {
       Serial.println("FRENTE BLOQUEADA (obstaculo perto)");
 
       vibrar(c, 300);
+
+      apitar(300);
     }
 
     atualizarLuz();
@@ -791,6 +825,30 @@ void atualizarLuz() {
 void vibrar(ControllerPtr c, int duracaoMs) {
 
   c->playDualRumble(0, duracaoMs, 0xC0, 0xC0);
+}
+
+
+// Agenda um apito de alerta por um tempo (sem travar o programa,
+// sem delay). Quem liga e desliga o pino de verdade é a
+// atualizarBuzzer(), chamada uma vez por volta do loop().
+void apitar(int duracaoMs) {
+
+  buzzerDesligaEm = millis() + duracaoMs;
+}
+
+
+// Decide se o buzzer deve estar ligado agora: pela buzina (R3
+// segurado) ou por um alerta ainda dentro do tempo dele.
+void atualizarBuzzer() {
+
+  bool alertaAtivo = buzzerDesligaEm != 0 && millis() < buzzerDesligaEm;
+
+  if (buzzerDesligaEm != 0 && !alertaAtivo) {
+
+    buzzerDesligaEm = 0;
+  }
+
+  digitalWrite(BUZZER, (buzinaAtiva || alertaAtivo) ? HIGH : LOW);
 }
 
 
