@@ -152,7 +152,8 @@ Para refazer a coleta de dados e o treino, veja [`dados/gs-piso/README.md`](../d
 | Leitura do MPU-6050 parado (X ≈ 0,2 g, Z ≈ 1,05 g, giro ≈ 0) | ✅ estável, 0 falhas de leitura em 200 leituras por segundo |
 | Coleta de dados do piso com o carrinho | ✅ 37 amostras boas e 5 descartadas |
 | Modelo com amostras nunca vistas | ✅ 77,3% (seção 6) |
-| Programa final compila com o modelo real | ⏳ em andamento |
+| Programa final compila com o modelo real e inicia na ESP32 | ✅ 865 KB (66% da memória de programa) e 96 KB de RAM; sobe, calibra o nível e mostra o status 1 vez por segundo |
+| Inclinação com o carrinho parado | ✅ 0,2% a 0,3%, estável, depois da calibração do nível |
 | Inclinação de rampa | ⏳ a validar com uma rampa de referência |
 | Detecção de degrau e de piso irregular no carrinho | ⏳ a validar |
 | Patrulha: desvio de obstáculo com giro de 90° | ⏳ a validar |
