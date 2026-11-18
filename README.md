@@ -10,12 +10,38 @@
 
 ---
 
+## Global Solution CitizenTech — Robô Inspetor de Acessibilidade
+
+Entrega de **Project-Based Maker Lab** (componente *Físico*): o carrinho-robô evoluído para registrar barreiras de acessibilidade em calçadas, corredores e rampas, com um sensor novo (**MPU-6050**) e um modelo de **TinyML** que classifica o piso pela vibração.
+
+**Vídeo demonstrativo (até 6 min):** <!-- PREENCHER: link do YouTube (público) --> *em breve*
+
+### Ficha Técnica do MVP
+
+| Campo | Resposta |
+|---|---|
+| **Nome do produto** | Robô Inspetor de Acessibilidade (nome provisório, a alinhar com o grupo) |
+| **Cidadão e território** | pessoas com deficiência ou mobilidade reduzida e idosos; calçadas, corredores e rampas de áreas urbanas; agentes públicos que cuidam da manutenção |
+| **Problema, em uma frase** | obstáculos, degraus, pisos irregulares e rampas íngremes demais impedem a circulação de quem tem mobilidade reduzida e só são conhecidos quando alguém reclama |
+| **Proposta de valor** | um robô de baixo custo que percorre o trecho sozinho, detecta cada barreira e gera um relatório para apoiar a manutenção |
+| **Arquitetura: componentes** | ESP32, ponte H L298N com 4 motores, HC-SR04 (distância), **MPU-6050 (sensor novo)**, controle de PS4, buzzer e modelo de TinyML embarcado |
+| **Fontes de dados** | dados experimentais gerados pelo próprio robô em pisos de teste (liso, irregular, degrau, parado), com a geração e os descartes documentados em [`dados/gs-piso`](dados/gs-piso/README.md) |
+| **Modelos de IA** | rede neural pequena (Edge Impulse, Spectral Analysis, int8) que classifica 1 s de vibração em 4 classes: 97,6% na validação e **77,3% no teste com amostras nunca vistas** |
+| **URL do MVP e repositório** | este repositório; projeto público do modelo: <https://studio.edgeimpulse.com/public/1167661/live> |
+| **Indicadores de impacto** | barreiras detectadas por trecho; metros inspecionados; acerto do modelo de piso no teste (77,3%) *(tempo de inspeção em comparação com a inspeção manual: a medir)* |
+| **ODS conectados** | **11** (meta 11.7, e 11.2), **10** (meta 10.2) e **9** (meta 9.1), explicados na [documentação](docs/09-gs-robo-inspetor.md#11-ods) |
+
+**Documentação completa:** [docs/09-gs-robo-inspetor.md](docs/09-gs-robo-inspetor.md) (problema, solução, ligação, integração do sensor com a IA, dados, modelo, autonomia, como instalar e executar, testes, IA responsável e ODS). **Código:** [`src/arduino/gs_robo_inspetor`](src/arduino/gs_robo_inspetor/gs_robo_inspetor.ino).
+
+---
+
 ## Versões
 
 | Versão | Trabalho | Controlador | Controle | Destaque |
 |---|---|---|---|---|
 | **1** | Check Point 01 | Arduino Uno | app serial Bluetooth (HC-05) | para sozinho ao detectar obstáculo |
 | **2** | Trabalho com TinyML | ESP32 | controle de PS4 (Bluepad32) | modelo treinado no Edge Impulse classifica a distância |
+| **3** | Global Solution CitizenTech | ESP32 | controle de PS4 e modo patrulha autônomo | MPU-6050 e modelo de piso: registra obstáculos, degraus, pisos irregulares, rampas e tombo |
 
 ---
 
@@ -107,10 +133,16 @@ cp2-carrinho--tinyml/
 │   ├── 01-requisitos-e-planejamento.md    versão 1: requisitos, MVP, backlog e decisões
 │   ├── 07-versao-esp32-ps4.md             versão 2: hardware, controles, códigos e problemas resolvidos
 │   ├── 08-tinyml.md                       relatório do TinyML (Aulas 19 e 20)
+│   ├── 09-gs-robo-inspetor.md             Global Solution: documentação do robô inspetor de acessibilidade
+│   ├── roteiro-video-gs.md                roteiro do vídeo da Global Solution
 │   └── img/                               prints do Edge Impulse
-├── dados/tinyml/                      ← dataset, scripts de captura e biblioteca do modelo (ver README da pasta)
+├── dados/tinyml/                      ← dataset, scripts de captura e biblioteca do modelo de distância (Check Point 2)
+├── dados/gs-piso/                     ← dataset de vibração do piso, scripts de coleta e biblioteca do modelo (Global Solution)
 └── src/arduino/
-    ├── carrinho_esp32_ps4_ia/         ← CÓDIGO PRINCIPAL da versão 2 (PS4 + sensor + modelo)
+    ├── gs_robo_inspetor/              ← CÓDIGO PRINCIPAL da Global Solution (PS4 + HC-SR04 + MPU-6050 + modelo de piso + patrulha)
+    ├── gs_coleta_piso/                ← coleta de vibração do piso (gera o dataset do modelo)
+    ├── teste_mpu6050/                 ← teste isolado do MPU-6050
+    ├── carrinho_esp32_ps4_ia/         ← versão 2 (PS4 + sensor de distância + modelo de distância)
     ├── carrinho_esp32_ps4/            ← versão 2 só com o controle de PS4
     ├── carrinho_esp32_wifi/           ← alternativa: página web pelo Wi-Fi (iPhone e Android)
     ├── carrinho_esp32/                ← alternativa: Bluetooth clássico (só Android)
@@ -128,7 +160,9 @@ Os códigos de teste isolado da versão 1 (motores, Bluetooth, sensor e buzzer) 
 | Documento | Conteúdo |
 |---|---|
 | [Versão 2: ESP32 e PS4](docs/07-versao-esp32-ps4.md) | componentes, pinos, controles, como compilar, problemas e soluções |
-| [TinyML](docs/08-tinyml.md) | sensor, pré-processamento, classes, dataset, treino no Edge Impulse, teste na placa e integração |
+| [**Global Solution: robô inspetor**](docs/09-gs-robo-inspetor.md) | problema, solução, ligação, integração do MPU-6050 com a IA, dados, modelo, patrulha, instalação, testes, IA responsável e ODS |
+| [Roteiro do vídeo da GS](docs/roteiro-video-gs.md) | roteiro de até 6 minutos |
+| [TinyML](docs/08-tinyml.md) | sensor, pré-processamento, classes, dataset, treino no Edge Impulse, teste na placa e integração (Check Point 2) |
 | [Dados do TinyML](dados/tinyml/README.md) | arquivos e passo a passo para reproduzir |
 | [Requisitos e evolução (versão 1)](docs/01-requisitos-e-planejamento.md) | requisitos, proposta, MVP, backlog e decisões do Check Point 01 |
 

@@ -47,8 +47,19 @@ python capturar_piso.py --classe parado --corridas 3 --duracao 3000
    - Time series data: **window size 1000 ms**, **window increase 200 ms**, frequência **200 Hz**, marque só os eixos **accX, accY e accZ**.
    - Processing block: **Spectral Analysis**.
    - Learning block: **Classification**.
-4. Gere as features e treine (uns 50 ciclos).
+4. Gere as features e treine: **100 ciclos**, learning rate 0,0005 e, em *Advanced training settings*, **Auto-weight classes** ligado (com ele desligado a acurácia na validação foi de 82,9%).
 5. *Deployment > Arduino library > Build* e baixe o zip.
+
+O projeto que gerou o modelo usado no robô é público: <https://studio.edgeimpulse.com/public/1167661/live>. O zip da biblioteca está em `ei-gs-piso-robo-inspetor-arduino-1.0.1.zip`.
+
+## Resultados do modelo
+
+| Medida | Resultado |
+|---|---|
+| Validação (janelas de arquivos que também aparecem no treino) | 97,6% de acurácia, loss 0,30 |
+| Teste com 7 corridas que o modelo nunca viu | **77,3%** (liso 91%, degrau 50%, irregular 17%) |
+
+A validação é otimista, porque janelas vizinhas de uma mesma corrida caem em treino e validação. O teste é o número honesto, mas tem só 1 corrida de `irregular` e 2 de `degrau`. A discussão completa está em [`docs/09-gs-robo-inspetor.md`](../../docs/09-gs-robo-inspetor.md#6-modelo-edge-impulse).
 
 ## Teste offline
 
