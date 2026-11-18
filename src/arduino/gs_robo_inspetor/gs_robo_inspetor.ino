@@ -27,6 +27,11 @@
 //   Options = imprime o relatório da inspeção na serial
 //   Share = recalibra o nível (com o carrinho em piso plano)
 //
+// A luz do controle PISCA por 2 s na cor da ocorrência:
+//   magenta = degrau | laranja = rampa acima da norma
+//   amarelo = piso irregular | branco = batida
+//   vermelho = obstáculo ou carrinho tombado
+//
 // O botão BOOT da placa também liga / desliga a patrulha.
 //
 // Placa na IDE: ESP32 + Bluepad32 Arduino > DOIT ESP32 DEVKIT V1
@@ -358,6 +363,15 @@ bool botaoAnterior = false;
 
 unsigned long ultimoBotaoMs = 0;
 
+// Luz do controle: pisca na cor da ocorrência por uns segundos
+unsigned long luzEventoAte = 0;
+
+uint8_t luzEventoR = 0;
+uint8_t luzEventoG = 0;
+uint8_t luzEventoB = 0;
+
+const unsigned long DURACAO_LUZ_EVENTO_MS = 2000;
+
 
 // =====================================================
 // ESTADO DO CARRINHO
@@ -548,6 +562,8 @@ void loop() {
     // Sem controle e sem patrulha: garante que está parado
     mover('S');
   }
+
+  atualizarLuzEvento();
 
   atualizarBuzzer();
 
@@ -1381,6 +1397,8 @@ void registrarEvento(TipoEvento tipo) {
 
   if (controle && controle->isConnected()) {
 
+    iniciarLuzEvento(tipo);
+
     vibrar(controle, tipo == EVENTO_PISO_IRREGULAR ? 150 : 300);
   }
 }
@@ -2015,6 +2033,12 @@ void definirCor(uint8_t r, uint8_t g, uint8_t b) {
 
 void atualizarLuz() {
 
+  // Enquanto a luz pisca por causa de uma ocorrência, ela manda
+  if (luzEventoAte != 0) {
+
+    return;
+  }
+
   bool indoParaFrente =
     movimentoAtual == 'F' ||
     movimentoAtual == 'L' ||
@@ -2050,6 +2074,91 @@ void atualizarLuz() {
 void vibrar(ControllerPtr c, int duracaoMs) {
 
   c->playDualRumble(0, duracaoMs, 0xC0, 0xC0);
+}
+
+
+// Escolhe a cor da luz para a ocorrência e começa a piscar
+void iniciarLuzEvento(TipoEvento tipo) {
+
+  switch (tipo) {
+
+    case EVENTO_DEGRAU:
+
+      luzEventoR = 255;
+      luzEventoG = 0;
+      luzEventoB = 255;          // magenta
+
+      break;
+
+    case EVENTO_RAMPA:
+
+      luzEventoR = 255;
+      luzEventoG = 110;
+      luzEventoB = 0;            // laranja
+
+      break;
+
+    case EVENTO_PISO_IRREGULAR:
+
+      luzEventoR = 255;
+      luzEventoG = 255;
+      luzEventoB = 0;            // amarelo
+
+      break;
+
+    case EVENTO_BATIDA:
+
+      luzEventoR = 255;
+      luzEventoG = 255;
+      luzEventoB = 255;          // branco
+
+      break;
+
+    default:
+
+      luzEventoR = 255;
+      luzEventoG = 0;
+      luzEventoB = 0;            // vermelho (obstáculo e tombo)
+
+      break;
+  }
+
+  luzEventoAte = millis() + DURACAO_LUZ_EVENTO_MS;
+}
+
+
+// Pisca a luz do controle (250 ms ligada, 250 ms apagada) e, no
+// fim, volta para a cor do estado do carrinho
+void atualizarLuzEvento() {
+
+  if (luzEventoAte == 0) {
+
+    return;
+  }
+
+  unsigned long agora = millis();
+
+  if (agora >= luzEventoAte) {
+
+    luzEventoAte = 0;
+
+    ultimaCor = -1;
+
+    atualizarLuz();
+
+    return;
+  }
+
+  bool ligada = (agora / 250) % 2 == 0;
+
+  if (ligada) {
+
+    definirCor(luzEventoR, luzEventoG, luzEventoB);
+
+  } else {
+
+    definirCor(0, 0, 0);
+  }
 }
 
 

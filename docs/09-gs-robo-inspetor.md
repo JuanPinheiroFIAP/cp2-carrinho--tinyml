@@ -28,6 +28,21 @@ Um robô de baixo custo percorre o trecho **sozinho (modo patrulha)** ou conduzi
 
 O limite de 8,33% (1:12) é a referência de inclinação máxima de rampas da NBR 9050; vale conferir a edição vigente da norma antes de citá-lo.
 
+### Como o robô avisa (sem precisar de cabo nem de computador)
+
+Quem dirige acompanha o robô pelo próprio **controle de PS4** e pelo buzzer. Cada ocorrência dispara os três avisos ao mesmo tempo:
+
+| Ocorrência | Buzzer | Vibração do controle | **Luz do controle (pisca por 2 s)** |
+|---|---|---|---|
+| **Degrau** | 2 bipes | 0,3 s | **magenta** |
+| Rampa acima da norma | 3 bipes (repete a cada 5 s enquanto estiver inclinado) | 0,3 s | **laranja** |
+| Piso irregular | 1 bipe | 0,15 s | **amarelo** |
+| Batida (colisão) | apito de 0,3 s | 0,3 s | **branco** |
+| Obstáculo | 1 bipe | 0,3 s | **vermelho** |
+| Carrinho tombado | apito de 1,5 s | 0,3 s | **vermelho** |
+
+A luz pisca (250 ms acesa, 250 ms apagada) e depois volta à cor do estado: verde parado, azul andando, amarelo em ré, roxo com obstáculo a médio alcance, ciano em patrulha e vermelho na emergência. O detalhamento de cada ocorrência (tipo, momento, distância e inclinação) sai no **relatório**, pelo botão **Options**.
+
 ## 3. Componentes
 
 | Componente | Função |
@@ -36,7 +51,7 @@ O limite de 8,33% (1:12) é a referência de inclinação máxima de rampas da N
 | **Ponte H L298N** e 4 motores DC | movimento (jumpers ENA/ENB: velocidade máxima) |
 | **HC-SR04** | distância (obstáculos) |
 | **MPU-6050 (GY-521)** — *sensor adicional* | aceleração e giro: inclinação, vibração do piso, batidas e curvas |
-| **Controle de PS4** (Bluepad32) | direção manual, ligar a patrulha e pedir o relatório |
+| **Controle de PS4** (Bluepad32) | direção manual, ligar a patrulha, pedir o relatório e **receber os avisos** (luz que pisca na cor da ocorrência e vibração) |
 | **Buzzer ativo** | avisos sonoros e buzina |
 | 4 pilhas AA (motores) e USB ou power bank (ESP32) | alimentação |
 
@@ -139,7 +154,7 @@ Acertos no teste por classe: `liso` 91%, `degrau` 50%, `irregular` 17%, `parado`
    https://raw.githubusercontent.com/ricardoquesada/esp32-arduino-lib-builder/master/bluepad32_files/package_esp32_bluepad32_index.json
    ```
 2. Instale a **biblioteca do modelo**: *Sketch > Incluir Biblioteca > Adicionar biblioteca .ZIP* com [`dados/gs-piso/ei-gs-piso-robo-inspetor-arduino-1.0.1.zip`](../dados/gs-piso/).
-3. Placa **ESP32 + Bluepad32 Arduino > DOIT ESP32 DEVKIT V1**. Abra [`src/arduino/gs_robo_inspetor`](../src/arduino/gs_robo_inspetor/gs_robo_inspetor.ino) e grave. **A primeira compilação leva uns 15 minutos** por causa da biblioteca do modelo; as seguintes são bem mais rápidas.
+3. Placa **ESP32 + Bluepad32 Arduino > DOIT ESP32 DEVKIT V1**. Abra [`src/arduino/gs_robo_inspetor`](../src/arduino/gs_robo_inspetor/gs_robo_inspetor.ino) e grave. **A compilação leva de 15 a 25 minutos** por causa da biblioteca do modelo, que é recompilada inteira a cada alteração do programa. Se compilar pelo `arduino-cli` com `--build-path`, use uma pasta de **caminho curto** (por exemplo `C:\gsb`): no Windows, caminhos acima de 260 caracteres fazem a compilação falhar.
 4. No Windows, a placa com chip CP2102 precisa do driver **CP210x** da Silicon Labs.
 5. Ligue as pilhas dos motores e o USB (ou um power bank), **com o carrinho parado em piso plano**: no começo ele calibra o giroscópio e o nível (uns 3 segundos).
 6. Segure **SHARE + PS** no controle até a luz piscar. Dirija com R2, L2 e o analógico.
@@ -159,6 +174,7 @@ Para refazer a coleta de dados e o treino, veja [`dados/gs-piso/README.md`](../d
 | Alerta de rampa com o carrinho inclinado | ✅ apitou 3 vezes a cada 5 s enquanto ficou inclinado e parou ao nivelar |
 | Sensor de distância (HC-SR04) | ✅ lê de 12 cm em diante e acompanha a mão; ver a falha do fio do ECHO abaixo |
 | Batida (colisão) | ⏳ a validar |
+| Luz do controle piscando na cor de cada ocorrência | ⏳ a validar |
 | Inclinação de rampa | ⏳ a validar com uma rampa de referência |
 | Detecção de degrau e de piso irregular no carrinho | ⏳ a validar |
 | Patrulha: desvio de obstáculo com giro de 90° | ⏳ a validar |
@@ -175,6 +191,7 @@ Para refazer a coleta de dados e o treino, veja [`dados/gs-piso/README.md`](../d
 | Corridas "lisas" com vibração parecida com a do irregular | o carrinho girava e raspava na parede (giro Z acima de 8 graus/s) | critério do giroscópio para descartar |
 | A COM8 sumiu durante uma gravação | conexão USB oscilou | tentar de novo; se repetir, trocar o cabo |
 | Sensor de distância sempre em 200 cm (sem eco) | **um fio do ECHO com defeito**. Confirmado por um programa simples e antigo, que também só lia "sem eco", e resolvido ao trocar o fio | trocar o fio; o programa novo não tinha erro |
+| A compilação falhou com "No such file or directory" em arquivos da biblioteca do modelo | o caminho da pasta de compilação passava de 260 caracteres (limite do Windows) | usar uma pasta de compilação com caminho curto |
 | Estado "tombado" com inclinação de 400% | o nível foi calibrado com o carrinho torto, na mão | reiniciar com o carrinho plano e parado, ou apertar **Share** no controle |
 | Compilação com duas bibliotecas do Edge Impulse | símbolos duplicados | a distância passou a usar limites, sem o modelo antigo |
 

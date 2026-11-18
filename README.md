@@ -39,7 +39,7 @@ Entrega de **Project-Based Maker Lab** (componente *Físico*): o carrinho-robô 
 |---|---|---|---|---|
 | **1** | Check Point 01 | Arduino Uno | app serial Bluetooth (HC-05) | para sozinho ao detectar obstáculo |
 | **2** | Trabalho com TinyML | ESP32 | controle de PS4 (Bluepad32) | modelo treinado no Edge Impulse classifica a distância |
-| **3** | Global Solution CitizenTech | ESP32 | controle de PS4 e modo patrulha autônomo | MPU-6050 e modelo de piso: registra obstáculos, degraus, pisos irregulares, rampas e tombo |
+| **3** | Global Solution CitizenTech | ESP32 | controle de PS4 e modo patrulha autônomo | MPU-6050 e modelo de piso: registra obstáculos, degraus, pisos irregulares, rampas, batidas e tombo, e avisa pela luz e pela vibração do controle |
 
 ---
 
