@@ -24,6 +24,7 @@ Um robô de baixo custo percorre o trecho **sozinho (modo patrulha)** ou conduzi
 | **Piso irregular** | MPU-6050 + modelo de TinyML | 3 de 5 respostas do modelo dizem "irregular" |
 | **Degrau** | MPU-6050 + modelo de TinyML | resposta "degrau" com confiança de 60% ou mais |
 | **Carrinho tombado** | MPU-6050 | inclinação acima de 45° por 0,5 s |
+| **Batida (colisão)** | MPU-6050 | tranco acima de 3 g na frente, andando para a frente e depois da arrancada (rede de segurança do sensor de distância) |
 
 O limite de 8,33% (1:12) é a referência de inclinação máxima de rampas da NBR 9050; vale conferir a edição vigente da norma antes de citá-lo.
 
@@ -122,6 +123,7 @@ Acertos no teste por classe: `liso` 91%, `degrau` 50%, `irregular` 17%, `parado`
 |---|---|
 | Caminho livre | anda para a frente |
 | Obstáculo a menos de 20 cm | para, registra a ocorrência, **gira cerca de 90° medidos pelo giroscópio** e segue |
+| **Batida** (o sensor de distância não viu a tempo) | registra, **dá ré por 0,6 s**, gira cerca de 90° e segue |
 | Degrau detectado | para por 1,5 s (aviso sonoro) e segue |
 | Rampa acima de 8,33% | registra, para e gira para outro caminho |
 | Piso irregular | registra e continua |
@@ -153,7 +155,10 @@ Para refazer a coleta de dados e o treino, veja [`dados/gs-piso/README.md`](../d
 | Coleta de dados do piso com o carrinho | ✅ 37 amostras boas e 5 descartadas |
 | Modelo com amostras nunca vistas | ✅ 77,3% (seção 6) |
 | Programa final compila com o modelo real e inicia na ESP32 | ✅ 865 KB (66% da memória de programa) e 96 KB de RAM; sobe, calibra o nível e mostra o status 1 vez por segundo |
-| Inclinação com o carrinho parado | ✅ 0,2% a 0,3%, estável, depois da calibração do nível |
+| Inclinação com o carrinho parado | ✅ 0,2% a 0,4%, estável, depois da calibração do nível |
+| Alerta de rampa com o carrinho inclinado | ✅ apitou 3 vezes a cada 5 s enquanto ficou inclinado e parou ao nivelar |
+| Sensor de distância (HC-SR04) | ✅ lê de 12 cm em diante e acompanha a mão; ver a falha do fio do ECHO abaixo |
+| Batida (colisão) | ⏳ a validar |
 | Inclinação de rampa | ⏳ a validar com uma rampa de referência |
 | Detecção de degrau e de piso irregular no carrinho | ⏳ a validar |
 | Patrulha: desvio de obstáculo com giro de 90° | ⏳ a validar |
@@ -169,6 +174,8 @@ Para refazer a coleta de dados e o treino, veja [`dados/gs-piso/README.md`](../d
 | O carrinho bateu na parede durante a coleta | trecho curto e corridas de 5 s | corridas de 3 s e ida e volta automática |
 | Corridas "lisas" com vibração parecida com a do irregular | o carrinho girava e raspava na parede (giro Z acima de 8 graus/s) | critério do giroscópio para descartar |
 | A COM8 sumiu durante uma gravação | conexão USB oscilou | tentar de novo; se repetir, trocar o cabo |
+| Sensor de distância sempre em 200 cm (sem eco) | **um fio do ECHO com defeito**. Confirmado por um programa simples e antigo, que também só lia "sem eco", e resolvido ao trocar o fio | trocar o fio; o programa novo não tinha erro |
+| Estado "tombado" com inclinação de 400% | o nível foi calibrado com o carrinho torto, na mão | reiniciar com o carrinho plano e parado, ou apertar **Share** no controle |
 | Compilação com duas bibliotecas do Edge Impulse | símbolos duplicados | a distância passou a usar limites, sem o modelo antigo |
 
 ## 10. IA responsável e dados pessoais

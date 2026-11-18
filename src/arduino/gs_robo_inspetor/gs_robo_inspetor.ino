@@ -82,13 +82,15 @@ enum TipoEvento {
   EVENTO_PISO_IRREGULAR,
   EVENTO_RAMPA,
   EVENTO_TOMBADO,
+  EVENTO_BATIDA,
   QUANTIDADE_EVENTOS
 };
 
 enum EstadoPatrulha {
   PATRULHA_ANDANDO,
   PATRULHA_PARADA,
-  PATRULHA_GIRANDO
+  PATRULHA_GIRANDO,
+  PATRULHA_RE
 };
 
 struct Evento {
@@ -103,7 +105,8 @@ const char* NOMES_EVENTOS[QUANTIDADE_EVENTOS] = {
   "DEGRAU",
   "PISO IRREGULAR",
   "RAMPA ACIMA DA NORMA",
-  "CARRINHO TOMBADO"
+  "CARRINHO TOMBADO",
+  "BATIDA (COLISAO)"
 };
 
 
@@ -258,6 +261,24 @@ bool tombado = false;
 
 
 // =====================================================
+// BATIDA (COLISÃO)
+// =====================================================
+
+// Rede de segurança do sensor de distância: um tranco forte na
+// direção da frente quer dizer que o carrinho bateu em algo.
+// Na coleta de dados, a parede deu um pico de 8 g e a régua (degrau)
+// ficou abaixo de 2,5 g.
+const float LIMITE_BATIDA_G = 3.0;
+
+// Quando foi o último tranco (escrito pela tarefa do MPU)
+volatile unsigned long ultimaBatidaMs = 0;
+
+unsigned long batidaTratadaMs = 0;
+
+unsigned long ultimaBatidaRegistradaMs = 0;
+
+
+// =====================================================
 // PISO (MODELO DE TINYML)
 // =====================================================
 
@@ -365,6 +386,10 @@ float anguloInicioGiro = 0;
 bool pendenteDegrau = false;
 
 bool pendenteRampa = false;
+
+bool pendenteBatida = false;
+
+unsigned long inicioReMs = 0;
 
 unsigned long inicioInspecaoMs = 0;
 
@@ -483,6 +508,8 @@ void loop() {
   atualizarDistancia();
 
   atualizarInclinacao();
+
+  atualizarBatida();
 
   atualizarPiso();
 
@@ -623,6 +650,12 @@ void tarefaMpu(void* parametro) {
     float az = (int16_t)((dados[4] << 8) | dados[5]) / ACEL_POR_G;
 
     float gz = (int16_t)((dados[12] << 8) | dados[13]) / GIRO_POR_GRAU_S - giroOffsetZ;
+
+    // Tranco forte na frente (ou atrás): o carrinho bateu em algo
+    if (fabs(ax - gravX) > LIMITE_BATIDA_G) {
+
+      ultimaBatidaMs = millis();
+    }
 
     unsigned long agoraUs = micros();
 
@@ -916,6 +949,53 @@ void atualizarDistancia() {
 }
 
 
+// Transforma o tranco medido pela tarefa do MPU em uma ocorrência
+void atualizarBatida() {
+
+  if (!mpuOk) {
+
+    return;
+  }
+
+  unsigned long agora = millis();
+
+  unsigned long batida = ultimaBatidaMs;
+
+  // Nenhum tranco novo desde a última vez
+  if (batida == 0 || batida == batidaTratadaMs) {
+
+    return;
+  }
+
+  batidaTratadaMs = batida;
+
+  // Só vale andando para a frente e depois da arrancada (a arrancada
+  // e o degrau também dão trancos, mas bem mais fracos)
+  if (
+    movimentoAtual != 'F' ||
+    agora - inicioFrenteMs < ESPERA_APOS_ARRANCADA_MS
+  ) {
+
+    return;
+  }
+
+  // No máximo uma batida a cada 2 segundos
+  if (agora - ultimaBatidaRegistradaMs < 2000) {
+
+    return;
+  }
+
+  ultimaBatidaRegistradaMs = agora;
+
+  registrarEvento(EVENTO_BATIDA);
+
+  if (modoPatrulha) {
+
+    pendenteBatida = true;
+  }
+}
+
+
 void processarDistancia(float cm) {
 
   // Limita a faixa
@@ -1113,6 +1193,8 @@ void atualizarPiso() {
 
     pisoAtual = PISO_PARADO;
 
+    confiancaPiso = 0;
+
     limparHistoricoPiso();
 
     return;
@@ -1123,6 +1205,8 @@ void atualizarPiso() {
   if (movimentoAtual != 'F') {
 
     pisoAtual = PISO_DESCONHECIDO;
+
+    confiancaPiso = 0;
 
     limparHistoricoPiso();
 
@@ -1284,6 +1368,12 @@ void registrarEvento(TipoEvento tipo) {
 
       break;
 
+    case EVENTO_BATIDA:
+
+      apitar(300);
+
+      break;
+
     default:
 
       break;
@@ -1374,6 +1464,8 @@ void alternarPatrulha() {
 
     pendenteRampa = false;
 
+    pendenteBatida = false;
+
     Serial.println("PATRULHA ligada: o carrinho anda sozinho.");
 
     bipar(2);
@@ -1420,6 +1512,21 @@ void executarPatrulha() {
         return;
       }
 
+      // Bateu em algo (o sensor de distância não viu a tempo): dá ré
+      // um instante e vira para outro caminho
+      if (pendenteBatida) {
+
+        pendenteBatida = false;
+
+        estadoPatrulha = PATRULHA_RE;
+
+        inicioReMs = agora;
+
+        mover('B');
+
+        return;
+      }
+
       // Degrau: para um instante para avisar e segue
       if (pendenteDegrau) {
 
@@ -1447,6 +1554,22 @@ void executarPatrulha() {
       }
 
       mover('F');
+
+      break;
+
+    case PATRULHA_RE:
+
+      // Ré por 0,6 s e depois gira para sair do obstáculo
+      if (agora - inicioReMs >= 600) {
+
+        mover('S');
+
+        iniciarGiro();
+
+      } else {
+
+        mover('B');
+      }
 
       break;
 
